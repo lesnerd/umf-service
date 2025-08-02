@@ -90,7 +90,16 @@ utest:
 itest:
 	gotestsum --format testname --junitfile=target/reports/itestresults.xml --packages="./tests..." -- -tags=itest -p 1 -count=1 -coverprofile=target/reports/icoverage.out -coverpkg=jfrog.com/...
 
+e2e-test:
+	cd ${PROJECT_DIR}
+	${PROJECT_DIR}/scripts/e2e/start_e2e.sh
+	$(GOCMD) test -v -count=1 ./tests/e2e/...; exit_status=$$?
+	${PROJECT_DIR}/scripts/e2e/stop_e2e.sh
+	exit $$exit_status
+
 test: utest
+
+test-all: utest itest e2e-test
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -194,4 +203,5 @@ docker-clean:
         test test-coverage run tidy lint format create-config \
         init-telemetry-db run-generator run-with-telemetry run-with-queue \
         test-telemetry-endpoints demo stop-demo \
-        docker-build docker-logs docker-status docker-clean
+        docker-build docker-logs docker-status docker-clean \
+        e2e-test test-all

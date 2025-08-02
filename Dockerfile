@@ -27,8 +27,8 @@ WORKDIR /root/
 # Copy the binary from builder stage
 COPY --from=builder /app/ufm-server .
 
-# Copy configuration
-COPY --from=builder /app/system.yaml .
+# Copy configuration to the correct location
+COPY --from=builder /app/system.yaml /root/.ufm/config/system.yaml
 
 # Expose port
 EXPOSE 8080
