@@ -176,12 +176,10 @@ to some cheap storage, or after a while, delete the data all together (business 
 
 ### Setup
 
-1. **Start PostgreSQL** (using Docker):
+1. **Start debug**:
 ```bash
-docker run -d --name postgres-ufm \
-  -e POSTGRES_PASSWORD=password \
-  -e POSTGRES_DB=umf_db \
-  -p 5432:5432 postgres:13
+# Start both servers (recommended)
+make debug-env
 ```
 
 2. **Initialize the system**:
