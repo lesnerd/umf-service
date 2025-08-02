@@ -212,6 +212,32 @@ telemetry:
 - **Performance benchmarks** for critical paths
 - **Database migration tests**
 
+### Integration Test Implementation
+The integration test suite provides comprehensive coverage of the telemetry system:
+
+#### Test Coverage Summary
+- **7 major categories** with **27 endpoints/features** tested
+- **System Endpoints**: Ping, health, readiness, version (4 endpoints)
+- **Telemetry API**: Get metrics, list metrics, performance, health, switches, metric types (7 endpoints)
+- **Error Handling**: Invalid inputs, missing data, malformed requests (4 endpoints)
+- **Performance**: Concurrent requests, response time, throughput (3 endpoints)
+- **Data Flow**: Ingestion, retrieval, consistency (3 endpoints)
+- **Configuration**: Environment overrides, config endpoints, initialization (3 endpoints)
+- **Monitoring**: Performance metrics, health monitoring, observability (3 endpoints)
+
+#### Test Infrastructure
+- **Mock-based testing** with realistic service simulation
+- **HTTP request/response testing** using httptest
+- **Concurrent request testing** for performance validation
+- **Error scenario testing** for robustness validation
+- **Configuration testing** for deployment scenarios
+
+#### Key Test Files
+- `tests/itests/itest_api_test.go` - Core API integration tests
+- `tests/itests/itest_e2e_workflow_test.go` - End-to-end workflow tests
+- `tests/itests/itest_summary_test.go` - Test coverage and infrastructure validation
+- `tests/itests/runner/itest_runner.go` - Test infrastructure and mock implementations
+
 ### Quality Features
 - **Input validation** for all API endpoints
 - **Error handling** with proper HTTP status codes

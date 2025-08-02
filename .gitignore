@@ -53,6 +53,7 @@ logs/
 # Temporary files
 tmp/
 temp/
+target/reports/
 
 # Documentation build files
 doc/swagger.json
