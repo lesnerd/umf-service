@@ -1,0 +1,53 @@
+# UFM Service Configuration
+# Simplified configuration with essential settings only
+
+# Server Configuration
+server:
+  port: "8080"
+  host: "0.0.0.0"
+  timeout: 30
+  multitenant: false
+
+# Database Configuration
+database:
+  type: "postgres"
+  url: "postgres://postgres:password@postgres:5432/umf_db?sslmode=disable"
+  maxOpenConnections: 10
+  maxIdleConnections: 5
+  queryTimeoutSecs: 30
+
+# Logging Configuration
+logging:
+  level: "debug"
+  format: "pretty"
+  console: true
+
+# Metrics Configuration
+metrics:
+  enabled: false
+  port: "9090"
+
+# Distributed Tracing Configuration
+tracing:
+  enabled: false
+  serviceName: "ufm"
+
+# Telemetry Configuration
+telemetry:
+  enabled: true
+  # Data ingestion from generator service
+  ingestion:
+    enabled: true
+    generator_url: "http://ufm-generator:9001"
+    poll_interval: "1s"    # How often to poll for new data
+    timeout: "5s"          # HTTP request timeout  
+    max_retries: 3
+    startup_delay: "2s"    # Wait before starting to poll
+    readiness_check: true  # Check generator health first
+  # Storage settings
+  storage:
+    cache_ttl: "5m"        # In-memory cache TTL
+    batch_size: 100        # Database batch insert size
+    flush_interval: "30s"  # Background flush frequency
+    max_retries: 3
+
