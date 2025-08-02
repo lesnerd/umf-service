@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ufm/internal/log"
+	"github.com/ufm/internal/monitoring/metrics"
 	"github.com/ufm/internal/telemetry/models"
 )
 
@@ -292,6 +293,10 @@ func (rq *RequestQueue) updateMetrics() {
 	} else {
 		rq.metrics.WorkerUtilization = 0
 	}
+
+	// Update Prometheus metrics
+	metrics.QueueDepth.Set(float64(rq.metrics.QueueDepth))
+	metrics.QueueWorkerUtilization.Set(rq.metrics.WorkerUtilization)
 }
 
 // GetMetrics returns current queue metrics
@@ -307,16 +312,19 @@ func (rq *RequestQueue) incrementQueuedRequests() {
 	rq.mu.Lock()
 	rq.metrics.QueuedRequests++
 	rq.mu.Unlock()
+	metrics.QueueOperationsTotal.WithLabelValues("queue", "success").Inc()
 }
 
 func (rq *RequestQueue) incrementProcessedRequests() {
 	rq.mu.Lock()
 	rq.metrics.ProcessedRequests++
 	rq.mu.Unlock()
+	metrics.QueueOperationsTotal.WithLabelValues("process", "success").Inc()
 }
 
 func (rq *RequestQueue) incrementDroppedRequests() {
 	rq.mu.Lock()
 	rq.metrics.DroppedRequests++
 	rq.mu.Unlock()
+	metrics.QueueOperationsTotal.WithLabelValues("drop", "success").Inc()
 }

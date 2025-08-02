@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ufm/internal/monitoring/metrics"
 	"github.com/ufm/internal/telemetry/models"
 )
 
@@ -85,10 +86,12 @@ func (c *InMemoryCache) GetMetric(switchID string, metricType models.MetricType)
 
 	data, exists := c.data[switchID]
 	if !exists {
+		metrics.CacheMissesTotal.Inc()
 		return nil, fmt.Errorf("switch %s not found", switchID)
 	}
 
 	c.hitCount++
+	metrics.CacheHitsTotal.Inc()
 	return data.GetMetricValue(metricType)
 }
 

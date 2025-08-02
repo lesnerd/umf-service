@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ufm/internal/log"
+	"github.com/ufm/internal/monitoring/metrics"
 	"github.com/ufm/internal/telemetry/models"
 	"github.com/ufm/internal/telemetry/storage"
 )
@@ -56,15 +57,30 @@ func NewTelemetryService(store storage.TelemetryStore, logger log.Logger) Teleme
 
 // IngestMetrics ingests a single telemetry data point
 func (s *telemetryService) IngestMetrics(data models.TelemetryData) error {
+	start := time.Now()
+
 	if data.SwitchID == "" {
+		metrics.ErrorsTotal.WithLabelValues("telemetry_service", "empty_switch_id").Inc()
 		return fmt.Errorf("switchID cannot be empty")
 	}
 
 	err := s.store.UpdateMetrics(data.SwitchID, data)
 	if err != nil {
+		metrics.ErrorsTotal.WithLabelValues("telemetry_service", "store_error").Inc()
 		s.logger.Errorf("Failed to ingest metrics for switch %s: %v", data.SwitchID, err)
 		return fmt.Errorf("failed to ingest metrics: %w", err)
 	}
+
+	duration := time.Since(start).Seconds()
+
+	// Record metrics for each metric type in the telemetry data
+	metrics.TelemetryIngestTotal.WithLabelValues(data.SwitchID, string(models.MetricBandwidth), "success").Inc()
+	metrics.TelemetryIngestTotal.WithLabelValues(data.SwitchID, string(models.MetricLatency), "success").Inc()
+	metrics.TelemetryIngestTotal.WithLabelValues(data.SwitchID, string(models.MetricPacketErrors), "success").Inc()
+	metrics.TelemetryIngestTotal.WithLabelValues(data.SwitchID, string(models.MetricUtilization), "success").Inc()
+	metrics.TelemetryIngestTotal.WithLabelValues(data.SwitchID, string(models.MetricTemperature), "success").Inc()
+
+	metrics.TelemetryIngestDuration.WithLabelValues(data.SwitchID, "all_metrics").Observe(duration)
 
 	s.logger.Debugf("Ingested metrics for switch %s", data.SwitchID)
 	return nil
@@ -103,12 +119,18 @@ func (s *telemetryService) IngestBatch(data []models.TelemetryData) error {
 
 // GetMetric retrieves a specific metric for a switch
 func (s *telemetryService) GetMetric(switchID string, metricType models.MetricType) (*models.MetricResponse, error) {
+	start := time.Now()
+
 	if switchID == "" {
+		metrics.TelemetryQueryTotal.WithLabelValues("", string(metricType), "error").Inc()
+		metrics.ErrorsTotal.WithLabelValues("telemetry_service", "empty_switch_id").Inc()
 		return nil, fmt.Errorf("switchID cannot be empty")
 	}
 
 	value, err := s.store.GetMetric(switchID, metricType)
 	if err != nil {
+		metrics.TelemetryQueryTotal.WithLabelValues(switchID, string(metricType), "error").Inc()
+		metrics.ErrorsTotal.WithLabelValues("telemetry_service", "store_error").Inc()
 		return nil, fmt.Errorf("failed to get metric %s for switch %s: %w", metricType, switchID, err)
 	}
 
@@ -117,6 +139,10 @@ func (s *telemetryService) GetMetric(switchID string, metricType models.MetricTy
 	if lastUpdate.IsZero() {
 		lastUpdate = time.Now()
 	}
+
+	duration := time.Since(start).Seconds()
+	metrics.TelemetryQueryTotal.WithLabelValues(switchID, string(metricType), "success").Inc()
+	metrics.TelemetryQueryDuration.WithLabelValues(switchID, string(metricType)).Observe(duration)
 
 	response := &models.MetricResponse{
 		SwitchID:   switchID,

@@ -16,6 +16,7 @@ import (
 	"github.com/ufm/internal/http/handler"
 	"github.com/ufm/internal/http/middleware"
 	"github.com/ufm/internal/log"
+	"github.com/ufm/internal/monitoring"
 	"github.com/ufm/internal/monitoring/tracing"
 	"github.com/ufm/internal/service"
 	"github.com/ufm/internal/telemetry"
@@ -48,10 +49,11 @@ type Initializer interface {
 }
 
 type app struct {
-	ctx         service.Context
-	logger      log.Logger
-	services    *AppServices
-	cancelFuncs []context.CancelFunc
+	ctx              service.Context
+	logger           log.Logger
+	services         *AppServices
+	cancelFuncs      []context.CancelFunc
+	metricsCollector *monitoring.SystemMetricsCollector
 }
 
 type AppServices struct {
@@ -110,11 +112,17 @@ func NewAppWithInitializer(ctx context.Context, logger log.Logger, serviceInitia
 	logNodeInfo(logger, nodeInfo, configService)
 
 	services := serviceInitializer.InitServices(svcCtx)
+
+	// Initialize system metrics collector
+	metricsCollector := monitoring.NewSystemMetricsCollector()
+	metricsCollector.StartPeriodicUpdates(30 * time.Second)
+
 	return &app{
-		ctx:         svcCtx,
-		logger:      svcCtx.LoggerFactory().(log.LoggerFactory).GetLogger("app"),
-		services:    services,
-		cancelFuncs: []context.CancelFunc{},
+		ctx:              svcCtx,
+		logger:           svcCtx.LoggerFactory().(log.LoggerFactory).GetLogger("app"),
+		services:         services,
+		cancelFuncs:      []context.CancelFunc{},
+		metricsCollector: metricsCollector,
 	}
 }
 

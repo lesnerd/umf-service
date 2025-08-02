@@ -392,8 +392,3 @@ multitenancy). I did not remove those part deliberately because I'd like you to 
 `http://127.0.0.1:8080/api/v1/telemetry/`
 11. Retention policy is crucial as data aggregates fast, so it either having new process that transform (for example to a file) the data and copies it
 to some cheap storage, or after a while, delete the data all together (business desition).
-
-
-# todo
-* [x] add promethius 
-* [x] add jager
