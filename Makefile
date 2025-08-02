@@ -84,12 +84,13 @@ build-all: generate build-linux-amd64 build-linux-arm64 build-darwin build-windo
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-test:
-	$(GOCMD) test ./... -v
+utest:
+	gotestsum  --format testname --junitfile-hide-empty-pkg=true --junitfile=target/reports/unittest.xml --packages="./internal..." -- -race -v  -count=1 -coverprofile=target/reports/ucoverage.out
 
-test-coverage:
-	$(GOCMD) test ./... -coverprofile=coverage.out
-	$(GOCMD) tool cover -html=coverage.out -o coverage.html
+itest:
+	gotestsum --format testname --junitfile=target/reports/itestresults.xml --packages="./tests..." -- -tags=itest -p 1 -count=1 -coverprofile=target/reports/icoverage.out -coverpkg=jfrog.com/...
+
+test: utest
 
 # ----------------------------------------------------------------------------------------------------------------------
 
