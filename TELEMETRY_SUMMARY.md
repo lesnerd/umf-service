@@ -395,11 +395,7 @@ to some cheap storage, or after a while, delete the data all together (business 
 
 
 # todo
-* [x] remove hard coded switches from db migration
 * [x] try with more switches not just 10
 * [x] check passthrough from cache to db
-* [x] add utests
-* [x] add itests
-* [x] add basic e2e tests
 * [x] add promethius 
 * [x] add jager
