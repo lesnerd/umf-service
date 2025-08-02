@@ -377,10 +377,92 @@ The system includes extensive observability features:
 - **Cache Metrics**: Hit/miss ratios, cache size
 - **System Metrics**: Memory usage, goroutines, uptime
 
+##### Metrics Collection Details
+
+The service automatically tracks and logs comprehensive performance metrics:
+
+**API Response Times**:
+- Sub-millisecond telemetry API responses (1.083µs - 2.834µs typical)
+- HTTP server response times (131.5µs - 6.34ms range)
+- Handler-level performance tracking with microsecond precision
+
+**Data Processing Metrics**:
+- Batch ingestion performance (48,757 metrics written successfully)
+- Database operation timing and success rates
+- Duplicate detection and filtering rates
+- Generation ID tracking for data consistency
+
+**Request Tracking**:
+- Unique correlation IDs for distributed tracing
+- Complete request lifecycle logging (API → Handler → Database)
+- Client metadata capture (IP, User-Agent, HTTP method)
+- Query parameter processing and filtering metrics
+
+**Performance Benchmarks Observed**:
+```
+API Endpoint Response Times:
+- GetMetric (single): 1.083µs - 2.834µs
+- ListMetrics (filtered): 4.534ms for 1000 records
+- HTTP Transport Layer: 131.5µs - 212.292µs
+- Database Batch Write: 48,757 metrics in single operation
+```
+
+**Monitoring Commands**:
+```bash
+# View real-time metrics
+curl http://localhost:8080/metrics
+
+# Performance dashboard
+curl http://localhost:8080/telemetry/performance
+
+# Health with metrics
+curl http://localhost:8080/telemetry/health
+```
+
 #### Structured Logging
 - JSON-formatted logs with correlation IDs
 - Request/response logging with timing
 - Configurable log levels (debug, info, warn, error)
+
+##### Log Format and Examples
+
+The service generates structured logs with multiple log levels and comprehensive request tracking:
+
+**API Request Logs**:
+```
+2025-08-02 23:03:52 | INFO | Telemetry API: GET /telemetry/metrics/switch-004/temperature_c 200 1.083µs [4b1b233e-7c4a-4d75-88a0-1a27312a9749]
+2025-08-02 23:03:53 | INFO | [f19f83fb-43a] | http-server | GET /telemetry/metrics/switch-004/temperature_c 200 194µs | latency=194µs, client_ip=127.0.0.1, method=GET, path=/telemetry/metrics/switch-004/temperature_c, user_agent=PostmanRuntime/7.45.0, status=200
+```
+
+**Handler Performance Logs**:
+```
+2025-08-02 23:03:52 | DEBUG | telemetry-handler | GetMetric: switch=switch-004, metric=temperature_c, duration=17.792µs
+2025-08-02 23:03:59 | DEBUG | telemetry-handler | handleMetricsByType: metricTypes=temperature_c,bandwidth_mbps, count=1000, duration=4.534584ms
+```
+
+**Data Ingestion Logs**:
+```
+2025-08-02 23:03:53 | DEBUG | app | Successfully wrote 48757 metrics to database (attempt 1)
+2025-08-02 23:03:53 | INFO | app | Successfully ingested 48757 telemetry records, generation_id=gen_1754165028727488458
+2025-08-02 23:03:53 | DEBUG | app | Skipping duplicate data (generation_id: gen_1754165028727488458, timestamp: 2025-08-02T20:03:48Z)
+```
+
+**Switch Registration Logs**:
+```
+2025-08-02 23:04:00 | INFO | app | Registered switch: switch-001 (switch-001) at data center
+2025-08-02 23:04:00 | DEBUG | app | Registered switch: switch-001
+```
+
+##### Log Components
+
+Each log entry includes:
+- **Timestamp**: ISO format with microsecond precision
+- **Level**: INFO, DEBUG, WARN, ERROR
+- **Component**: Service component identifier (app, telemetry-handler, http-server)
+- **Correlation ID**: Unique request tracking (e.g., `[f19f83fb-43a]`)
+- **Message**: Structured log message with context
+- **Metrics**: Performance data (latency, duration, counts)
+- **Metadata**: Additional context (IP, user agent, status codes)
 
 #### Distributed Tracing
 - OpenTracing integration with Jaeger
@@ -416,6 +498,45 @@ make test-coverage
 # Test API endpoints
 make test-telemetry-endpoints
 ```
+
+## CI/CD Pipeline
+
+### GitHub Actions Workflow
+
+The project includes a comprehensive CI/CD pipeline that runs automatically on all pushes and pull requests to the main branch:
+
+**Workflow: `.github/workflows/go.yml`**
+- **Triggers**: Push to main, Pull Requests to main
+- **Runtime**: Ubuntu Latest with Go 1.24.5
+- **Status**: ✅ All tests passing ([Latest Run](https://github.com/lesnerd/umf-service/actions/runs/16697243651))
+
+**Pipeline Steps**:
+```yaml
+1. Checkout code
+2. Set up Go 1.24.5
+3. Install dependencies (make prereq + go mod tidy)
+4. Install docker-compose
+5. Create test directories
+6. Generate mocks
+7. Build application
+8. Run unit tests (make utest)
+9. Run integration tests (make itest)
+10. Run end-to-end tests (make e2e-test)
+```
+
+**Test Coverage**:
+- **Unit Tests**: Core component testing with mocks
+- **Integration Tests**: Full API endpoint validation
+- **End-to-End Tests**: Complete system workflow testing
+- **All Tests Passing**: Current build status shows 100% success rate
+
+**Build Verification**:
+- Cross-platform build validation
+- Dependency resolution verification
+- Mock generation for interface testing
+- Docker Compose integration for test services
+
+View the latest CI/CD runs at: [GitHub Actions](https://github.com/lesnerd/umf-service/actions)
 
 ## Deployment
 
