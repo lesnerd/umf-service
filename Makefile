@@ -85,7 +85,7 @@ build-all: generate build-linux-amd64 build-linux-arm64 build-darwin build-windo
 # ----------------------------------------------------------------------------------------------------------------------
 
 utest:
-	gotestsum  --format testname --junitfile-hide-empty-pkg=true --junitfile=target/reports/unittest.xml --packages="./internal..." -- -race -v  -count=1 -coverprofile=target/reports/ucoverage.out
+	gotestsum  --format testname --junitfile-hide-empty-pkg=true --junitfile=target/reports/unittest.xml --packages="$(shell go list ./internal/... | grep -v /mocks)" -- -race -v  -count=1 -coverprofile=target/reports/ucoverage.out
 
 itest:
 	gotestsum --format testname --junitfile=target/reports/itestresults.xml --packages="./tests/itests..." -- -tags=itest -p 1 -count=1 -coverprofile=target/reports/icoverage.out -coverpkg=github.com/ufm/...
