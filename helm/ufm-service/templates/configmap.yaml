@@ -1,0 +1,39 @@
+{{- if .Values.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ufm-service.fullname" . }}-config
+  labels:
+    {{- include "ufm-service.labels" . | nindent 4 }}
+data:
+  system.yaml: |
+    server:
+      port: {{ .Values.config.server.port }}
+      
+    {{- if .Values.config.database.enabled }}
+    database:
+      enabled: {{ .Values.config.database.enabled }}
+      url: {{ .Values.config.database.url | quote }}
+    {{- end }}
+    
+    {{- if .Values.config.telemetry.enabled }}
+    telemetry:
+      enabled: {{ .Values.config.telemetry.enabled }}
+    {{- end }}
+    
+    {{- if .Values.config.monitoring }}
+    monitoring:
+      {{- if .Values.config.monitoring.metrics.enabled }}
+      metrics:
+        enabled: {{ .Values.config.monitoring.metrics.enabled }}
+        port: {{ .Values.config.monitoring.metrics.port }}
+        path: {{ .Values.config.monitoring.metrics.path | quote }}
+      {{- end }}
+      {{- if .Values.config.monitoring.tracing.enabled }}
+      tracing:
+        enabled: {{ .Values.config.monitoring.tracing.enabled }}
+        jaeger:
+          endpoint: {{ .Values.config.monitoring.tracing.jaeger.endpoint | quote }}
+      {{- end }}
+    {{- end }}
+{{- end }}

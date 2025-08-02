@@ -1,0 +1,17 @@
+apiVersion: v2
+name: ufm-service
+description: A Helm chart for Unified Fabric Manager Service
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - ufm
+  - unified-fabric-manager
+  - microservice
+  - telemetry
+home: https://github.com/yourorg/umf-service
+sources:
+  - https://github.com/yourorg/umf-service
+maintainers:
+  - name: UMF Team
+    email: team@yourorg.com

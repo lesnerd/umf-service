@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ufm-service.fullname" . }}
+  labels:
+    {{- include "ufm-service.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      protocol: TCP
+      name: http
+    {{- if .Values.config.monitoring.metrics.enabled }}
+    - port: {{ .Values.config.monitoring.metrics.port }}
+      targetPort: {{ .Values.config.monitoring.metrics.port }}
+      protocol: TCP
+      name: metrics
+    {{- end }}
+  selector:
+    {{- include "ufm-service.selectorLabels" . | nindent 4 }}
