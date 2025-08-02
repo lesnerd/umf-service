@@ -1,6 +1,6 @@
 package client
 
-//go:generate ${PROJECT_DIR}/scripts/mockgen.sh ${GOFILE}
+//go:generate ${PROJECT_DIR}/scripts/mockgen.sh ${GOFILE} --package mocks
 
 import (
 	"context"

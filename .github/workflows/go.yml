@@ -29,6 +29,9 @@ jobs:
     - name: Create test directories
       run: mkdir -p target/reports
 
+    - name: Generate mocks
+      run: make generate
+
     - name: Build
       run: make build
 
