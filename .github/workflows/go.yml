@@ -11,7 +11,7 @@ on:
 
 jobs:
 
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -19,13 +19,21 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.23'
+        go-version: '1.24.5'
 
-    - name: Build
+    - name: Install dependencies
       run: |
         make prereq
         go mod tidy
-        make build
 
-    - name: Test
-      run: go test -v ./...
+    - name: Build
+      run: make build
+
+    - name: Run unit tests
+      run: make utest
+
+    - name: Run integration tests
+      run: make itest
+
+    - name: Run end-to-end tests
+      run: make e2e-test
