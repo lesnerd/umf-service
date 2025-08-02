@@ -172,6 +172,30 @@ demo:
 	@echo "🛑 Stop demo:"
 	@echo "   make stop-demo"
 
+debug-env:
+	@echo "🚀 Starting UFM Telemetry Demo with Docker for Debugging..."
+	@echo "Building and starting all services..."
+	@docker-compose -f docker-compose-for-debug.yml up --build -d
+	@echo ""
+	@echo "Waiting for services to be ready..."
+	@sleep 10
+	@echo ""
+	@echo "✅ UFM Telemetry System Running!"
+	@echo "   - Main API: http://localhost:8080/telemetry/metrics"
+	@echo "   - Generator CSV: http://localhost:9001/counters"
+	@echo "   - Performance: http://localhost:8080/telemetry/performance"
+	@echo "   - Health: http://localhost:8080/telemetry/health"
+	@echo "   - System Health: http://localhost:8080/api/v1/system/health"
+	@echo ""
+	@echo "📊 Check service status:"
+	@echo "   docker-compose -f docker-compose-for-debug.yml ps"
+	@echo ""
+	@echo "🔍 View logs:"
+	@echo "   docker-compose -f docker-compose-for-debug.yml logs -f [service-name]"
+	@echo ""
+	@echo "🛑 Stop demo:"
+	@echo "   make stop-demo"
+
 stop-demo:
 	@echo "🛑 Stopping UFM Telemetry Demo..."
 	@docker-compose down --remove-orphans
