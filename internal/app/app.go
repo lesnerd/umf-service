@@ -59,7 +59,7 @@ type AppServices struct {
 	SystemHandler    handler.SystemHandler
 	TelemetryService telemetry.TelemetryService
 	TelemetryHandler handler.TelemetryHandler
-	GeneratorClient  *client.GeneratorClient
+	GeneratorClient  client.GeneratorClientInterface
 }
 
 type initializer struct{}
@@ -259,7 +259,7 @@ func newServices(ctx service.Context) *AppServices {
 	// acting as a feature toggle
 	var telemetryService telemetry.TelemetryService
 	var telemetryHandler handler.TelemetryHandler
-	var generatorClient *client.GeneratorClient
+	var generatorClient client.GeneratorClientInterface
 
 	if ctx.Config().Get().Telemetry.Enabled {
 		// Initialize database connection

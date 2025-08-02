@@ -1,5 +1,7 @@
 package client
 
+//go:generate ${PROJECT_DIR}/scripts/mockgen.sh ${GOFILE}
+
 import (
 	"context"
 	"encoding/csv"
@@ -15,6 +17,13 @@ import (
 	"github.com/ufm/internal/telemetry"
 	"github.com/ufm/internal/telemetry/models"
 )
+
+// GeneratorClientInterface defines the interface for generator client operations
+type GeneratorClientInterface interface {
+	Start(ctx context.Context) error
+	Stop() error
+	GetStats() map[string]interface{}
+}
 
 // GeneratorClient handles HTTP polling of the telemetry generator service
 type GeneratorClient struct {
@@ -62,7 +71,7 @@ func NewGeneratorClient(
 	config GeneratorClientConfig,
 	service telemetry.TelemetryService,
 	logger log.Logger,
-) *GeneratorClient {
+) GeneratorClientInterface {
 	if logger == nil {
 		logger = log.DefaultLogger
 	}
