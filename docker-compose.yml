@@ -1,0 +1,89 @@
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: umf_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d umf_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # UFM Telemetry Generator
+  ufm-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile.generator
+    environment:
+      DATABASE_URL: "postgres://postgres:password@postgres:5432/umf_db?sslmode=disable"
+      GENERATOR_PORT: "9001"
+      GENERATOR_SWITCH_COUNT: "1000"
+      GENERATOR_UPDATE_INTERVAL: "10s"
+    ports:
+      - "9001:9001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9001/counters"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # UFM Main Server
+  ufm-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: "postgres://umf_user:umf_password@localhost:5432/umf_db?sslmode=disable"
+      SERVER_PORT: "8080"
+      TELEMETRY_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ufm-generator:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:8080/api/v1/system/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Jaeger for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - "14268:14268"  # HTTP collector
+      - "16686:16686"  # Web UI
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:

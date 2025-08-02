@@ -25,7 +25,6 @@ build/
 
 # Configuration files
 .env
-*.yml
 *.yaml
 system.yaml
 system.yml

@@ -28,7 +28,7 @@ var generator *DataGenerator
 
 func main() {
 	port := getEnv("GENERATOR_PORT", "9001")
-	switchCount := parseInt(getEnv("GENERATOR_SWITCH_COUNT", "10"))
+	switchCount := parseInt(getEnv("GENERATOR_SWITCH_COUNT", "1000"))
 
 	fmt.Printf("Starting eagerptive CSV generator on port %s with %d switches\n", port, switchCount)
 

@@ -395,7 +395,5 @@ to some cheap storage, or after a while, delete the data all together (business 
 
 
 # todo
-* [x] try with more switches not just 10
-* [x] check passthrough from cache to db
 * [x] add promethius 
 * [x] add jager
