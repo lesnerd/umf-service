@@ -51,6 +51,11 @@ type TelemetryStore interface {
 	// Combines cache and repository operations
 	TelemetryCache
 
+	// Switch operations
+	CreateSwitch(ctx context.Context, sw models.Switch) error
+	GetSwitch(ctx context.Context, switchID string) (*models.Switch, error)
+	ListSwitches(ctx context.Context) ([]models.Switch, error)
+
 	// Persistence operations
 	FlushToDatabase(ctx context.Context) error
 	LoadFromDatabase(ctx context.Context) error
@@ -312,6 +317,23 @@ func (hs *HybridStore) CleanupStale(maxAge time.Duration) int {
 func (hs *HybridStore) GetSnapshot() *models.TelemetrySnapshot {
 	hs.incrementRequestCount()
 	return hs.cache.GetSnapshot()
+}
+
+// Switch operations
+
+// CreateSwitch creates a new switch in the database
+func (hs *HybridStore) CreateSwitch(ctx context.Context, sw models.Switch) error {
+	return hs.repository.CreateSwitch(ctx, sw)
+}
+
+// GetSwitch retrieves a switch by ID from the database
+func (hs *HybridStore) GetSwitch(ctx context.Context, switchID string) (*models.Switch, error) {
+	return hs.repository.GetSwitch(ctx, switchID)
+}
+
+// ListSwitches retrieves all switches from the database
+func (hs *HybridStore) ListSwitches(ctx context.Context) ([]models.Switch, error) {
+	return hs.repository.ListSwitches(ctx)
 }
 
 // Persistence operations

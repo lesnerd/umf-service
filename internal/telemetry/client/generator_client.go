@@ -250,6 +250,9 @@ func (gc *GeneratorClient) fetchAndProcessData() {
 		return
 	}
 
+	// Register switches from telemetry data
+	gc.registerSwitchesFromData(telemetryData)
+
 	// Ingest the data
 	if err := gc.service.IngestBatch(telemetryData); err != nil {
 		gc.mu.Lock()
@@ -396,6 +399,39 @@ func (gc *GeneratorClient) parseCSVData(csvData string) ([]models.TelemetryData,
 	}
 
 	return telemetryData, nil
+}
+
+// registerSwitchesFromData registers switches found in telemetry data
+func (gc *GeneratorClient) registerSwitchesFromData(telemetryData []models.TelemetryData) {
+	// Track unique switches to avoid duplicate registrations
+	seenSwitches := make(map[string]bool)
+
+	for _, data := range telemetryData {
+		if data.SwitchID == "" {
+			continue
+		}
+
+		// Skip if we've already processed this switch in this batch
+		if seenSwitches[data.SwitchID] {
+			continue
+		}
+		seenSwitches[data.SwitchID] = true
+
+		// Create switch record with "data center" as location
+		switchRecord := models.Switch{
+			ID:       data.SwitchID,
+			Name:     data.SwitchID,
+			Location: "data center",
+			Created:  time.Now(),
+		}
+
+		// Register the switch
+		if err := gc.service.RegisterSwitch(switchRecord); err != nil {
+			gc.logger.Warnf("Failed to register switch %s: %v", data.SwitchID, err)
+		} else {
+			gc.logger.Debugf("Registered switch: %s", data.SwitchID)
+		}
+	}
 }
 
 // parseCSVRecord parses a single CSV record into TelemetryData

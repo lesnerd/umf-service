@@ -181,26 +181,24 @@ func (s *telemetryService) RegisterSwitch(sw models.Switch) error {
 		return fmt.Errorf("switch ID cannot be empty")
 	}
 
-	// This would typically involve database operations just log for now
+	// Create the switch in the database
+	ctx := context.Background()
+	if err := s.store.CreateSwitch(ctx, sw); err != nil {
+		s.logger.Errorf("Failed to register switch %s: %v", sw.ID, err)
+		return fmt.Errorf("failed to register switch: %w", err)
+	}
+
 	s.logger.Infof("Registered switch: %s (%s) at %s", sw.ID, sw.Name, sw.Location)
 	return nil
 }
 
 // GetSwitches retrieves all registered switches
 func (s *telemetryService) GetSwitches() ([]models.Switch, error) {
-	// In a real implementation, this would query the database
-	// For now, we'll return switches based on current telemetry data
-	allData := s.store.ListAllSwitches()
-
-	var switches []models.Switch
-	for switchID := range allData {
-		// Create a basic switch record from telemetry data
-		switch_ := models.Switch{
-			ID:      switchID,
-			Name:    fmt.Sprintf("Switch %s", switchID),
-			Created: time.Now().Add(-24 * time.Hour), // Assume created 24h ago
-		}
-		switches = append(switches, switch_)
+	ctx := context.Background()
+	switches, err := s.store.ListSwitches(ctx)
+	if err != nil {
+		s.logger.Errorf("Failed to get switches: %v", err)
+		return nil, fmt.Errorf("failed to get switches: %w", err)
 	}
 
 	return switches, nil
