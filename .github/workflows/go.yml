@@ -26,6 +26,9 @@ jobs:
         make prereq
         go mod tidy
 
+    - name: Create test directories
+      run: mkdir -p target/reports
+
     - name: Build
       run: make build
 
