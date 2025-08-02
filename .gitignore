@@ -7,6 +7,9 @@
 bin/
 dist/
 
+*_mock.go
+*.pb.go
+
 # Test binary, built with `go test -c`
 *.test
 
