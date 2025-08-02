@@ -84,11 +84,11 @@ build-all: generate build-linux-amd64 build-linux-arm64 build-darwin build-windo
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-utest:
+utest: generate
 	gotestsum  --format testname --junitfile-hide-empty-pkg=true --junitfile=target/reports/unittest.xml --packages="$(shell go list ./internal/... | grep -v /mocks)" -- -race -v  -count=1 -coverprofile=target/reports/ucoverage.out
 
-itest:
-	gotestsum --format testname --junitfile=target/reports/itestresults.xml --packages="./tests/itests..." -- -tags=itest -p 1 -count=1 -coverprofile=target/reports/icoverage.out -coverpkg=github.com/ufm/...
+itest: generate
+	gotestsum --format testname --junitfile=target/reports/itestresults.xml --packages="$(shell go list ./tests/itests/...)" -- -tags=itest -p 1 -count=1 -coverprofile=target/reports/icoverage.out -coverpkg=github.com/ufm/...
 
 e2e-test:
 	cd ${PROJECT_DIR}
